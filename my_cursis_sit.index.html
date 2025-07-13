@@ -1,0 +1,241 @@
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenWenWeb Курси Мовні</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Soft Mint, Soft Blue, Soft Grey, White/Stone -->
+    <!-- Application Structure Plan: The application is designed with a fixed top header for branding. The main content area uses a responsive grid to display individual course cards. Each card acts as an expandable module: clicking a 'Details' button reveals a contact section for purchase and a 'Code Access' section. Upon entering a valid code, the actual course content is revealed within the same card. This structure prioritizes clarity, modularity, and a guided user flow, allowing users to explore courses and access content directly within their respective cards without navigating to separate pages. This approach enhances user understanding and simplifies interaction by keeping all relevant information grouped. -->
+    <!-- Visualization & Content Choices: Report Info: Multiple language courses, each with purchase and access mechanisms. -> Goal: Inform, Organize, Engage, Facilitate Access. -> Viz/Presentation Method: Interactive cards (HTML/Tailwind) with collapsible sections for 'Purchase/Contact' and 'Course Content'. -> Interaction: Buttons toggle visibility of sections. An input field and button for code validation. Persistent access via localStorage. -> Justification: This design is clean and modern, similar to the user's preferred German lesson. It provides a clear path for users to learn about, inquire about, and access courses. Collapsible sections keep the interface uncluttered. Client-side code validation simplifies the initial setup. -> Library/Method: Vanilla JavaScript for all interactive logic (toggling visibility, handling code input, localStorage), Tailwind CSS for all styling and responsiveness. No charts or complex visualizations are used, as the primary goal is content delivery and access management. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Дуже м'який сіро-білий фон */
+            color: #334155; /* Темно-сірий текст */
+        }
+        .card-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+            padding: 0 1.5rem;
+        }
+        .card-section.active {
+            max-height: 600px; /* Достатньо для вмісту */
+            padding: 1.5rem;
+        }
+        .course-content-section.active {
+            max-height: 1000px; /* Більше для вмісту курсу */
+        }
+        .button-primary {
+            background-color: #34d399; /* М'ятно-зелений */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease-in-out, transform 0.1s ease-in-out;
+        }
+        .button-primary:hover {
+            background-color: #10b981; /* Темніший м'ятний */
+            transform: translateY(-1px);
+        }
+        .button-secondary {
+            background-color: #cbd5e1; /* М'який сірий */
+            color: #475569;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .button-secondary:hover {
+            background-color: #94a3b8; /* Темніший сірий */
+        }
+        input[type="text"] {
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            transition: border-color 0.3s ease-in-out;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #34d399;
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-stone-50">
+
+    <!-- Верхня горизонтальна смужка -->
+    <header class="bg-emerald-200 p-4 shadow-md flex justify-between items-center h-16">
+        <h1 class="text-xl md:text-2xl font-bold text-emerald-800 ml-4">BenWenWeb курси мовні</h1>
+        <!-- Можна додати навігацію тут, якщо потрібно буде більше сторінок -->
+    </header>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <section class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-emerald-800 mb-4">Відкрийте Світ Мов з BenWenWeb!</h2>
+            <p class="text-lg md:text-xl text-stone-600 max-w-3xl mx-auto">
+                Наші курси розроблені для легкого та ефективного вивчення мов. Пориньте у світ німецької, англійської та польської мов з інтерактивними уроками, доступними в будь-який час.
+            </p>
+        </section>
+
+        <main id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Картки курсів будуть додані за допомогою JavaScript -->
+        </main>
+    </div>
+
+    <script>
+        const coursesData = [
+            {
+                id: 'german',
+                name: 'Німецька мова',
+                description: 'Почніть свою подорож у світ німецької з нуля або вдоскональте свої навички. Детальні пояснення вимови та граматики.',
+                color: '#90cdf4', // М'який блакитний
+                accessCode: 'DEUTSCH2025',
+                content: `
+                    <h3 class="text-2xl font-bold text-emerald-800 mb-4">Урок 1: Привітання та вимова</h3>
+                    <p class="mb-3">Ласкаво просимо до першого уроку німецької мови! Сьогодні ми зосередимося на базових привітаннях та ключових правилах вимови, щоб ви могли впевнено почати говорити.</p>
+                    <h4 class="text-xl font-semibold text-stone-700 mb-2">Guten Tag - Добрий день</h4>
+                    <p class="mb-3">Вимова: [ґутен: так:]. Зверніть увагу на довгі голосні. Звук 'u' вимовляється з округленими губами, а 'a' - більш гортанно.</p>
+                    <h4 class="text-xl font-semibold text-stone-700 mb-2">Wie geht es? - Як справи?</h4>
+                    <p class="mb-3">Вимова: [ві: ґейт ес?]. Буквосполучення 'ie' завжди читається як довгий 'і'.</p>
+                    <h4 class="text-xl font-semibold text-stone-700 mb-2">Frau Schmidt - Пані Шмідт</h4>
+                    <p class="mb-3">Вимова: [фрау шміт]. Дифтонг 'au' має наголос на 'а'. 'sch' читається як 'ш'.</p>
+                    <p class="text-sm text-stone-500 mt-4">Це лише початок! Продовжуйте практикуватися, і ви швидко побачите прогрес.</p>
+                `
+            },
+            {
+                id: 'english',
+                name: 'Англійська мова',
+                description: 'Відкрийте для себе світ англійської! Курс для початківців з акцентом на розмовні фрази та базову граматику.',
+                color: '#a7f3d0', // М'який зелений
+                accessCode: 'ENGLISH2025',
+                content: `
+                    <h3 class="text-2xl font-bold text-emerald-800 mb-4">Lesson 1: Greetings and Introductions</h3>
+                    <p class="mb-3">Welcome to your first English lesson! Today, we'll learn how to greet people and introduce ourselves in various situations.</p>
+                    <h4 class="text-xl font-semibold text-stone-700 mb-2">Hello! How are you?</h4>
+                    <p class="mb-3">This is a common way to greet someone. You can respond with "I'm fine, thank you!"</p>
+                    <h4 class="text-xl font-semibold text-stone-700 mb-2">My name is... What's your name?</h4>
+                    <p class="mb-3">Use this phrase to introduce yourself and ask for someone else's name.</p>
+                    <p class="text-sm text-stone-500 mt-4">Keep practicing these phrases, and you'll be speaking English in no time!</p>
+                `
+            },
+            {
+                id: 'polish',
+                name: 'Польська мова',
+                description: 'Опануйте основи польської мови для подорожей та спілкування. Легкі уроки для швидкого старту.',
+                color: '#d1d5db', // М'який сірий
+                accessCode: 'POLSKI2025',
+                content: `
+                    <h3 class="text-2xl font-bold text-emerald-800 mb-4">Lekcja 1: Podstawowe Zwroty</h3>
+                    <p class="mb-3">Witajcie na pierwszej lekcji języka polskiego! Dziś nauczymy się podstawowych zwrotów, które przydadzą się w codziennym życiu.</p>
+                    <h4 class="text-xl font-semibold text-stone-700 mb-2">Cześć! Jak się masz?</h4>
+                    <p class="mb-3">To jest powszechne powitanie. Możesz odpowiedzieć: "Dziękuję, dobrze!"</p>
+                    <h4 class="text-xl font-semibold text-stone-700 mb-2">Nazywam się... Jak masz na imię?</h4>
+                    <p class="mb-3">Użyj tego zwrotu, aby się przedstawić i zapytać o imię innej osoby.</p>
+                    <p class="text-sm text-stone-500 mt-4">Ćwicz te zwroty, a szybko zaczniesz mówić po polsku!</p>
+                `
+            }
+        ];
+
+        const coursesGrid = document.getElementById('courses-grid');
+
+        coursesData.forEach(course => {
+            const card = document.createElement('div');
+            card.className = `bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center transform hover:scale-105 transition-all duration-300`;
+            card.innerHTML = `
+                <div class="w-24 h-24 rounded-full flex items-center justify-center mb-4" style="background-color: ${course.color};">
+                    <span class="text-4xl text-white">${course.name.charAt(0)}</span>
+                </div>
+                <h3 class="text-2xl font-bold text-emerald-800 mb-2">${course.name}</h3>
+                <p class="text-stone-600 mb-6 flex-grow">${course.description}</p>
+                
+                <button class="button-primary w-full mb-4 toggle-contact-btn" data-course-id="${course.id}">
+                    Придбати курс / Зв'язатися
+                </button>
+
+                <!-- Секція для контакту та введення коду -->
+                <div id="contact-section-${course.id}" class="card-section w-full text-left">
+                    <p class="text-sm text-stone-700 mb-3">
+                        Щоб придбати курс, зв'яжіться з нами:
+                    </p>
+                    <a href="mailto:veniam2007@gmail.com?subject=Запит щодо курсу ${course.name}" class="block button-secondary w-full mb-3 text-center">
+                        Написати на email
+                    </a>
+                    <a href="https://t.me/Osiomer" target="_blank" class="block button-secondary w-full mb-4 text-center">
+                        Написати в Telegram
+                    </a>
+                    <p class="text-sm text-stone-700 mb-2">
+                        Якщо у вас є код доступу, введіть його тут:
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="access-code-input-${course.id}" placeholder="Введіть код" class="flex-grow">
+                        <button class="button-primary activate-code-btn" data-course-id="${course.id}">
+                            Активувати
+                        </button>
+                    </div>
+                    <p id="code-message-${course.id}" class="text-sm mt-2 text-red-500"></p>
+                </div>
+
+                <!-- Секція з контентом курсу -->
+                <div id="course-content-${course.id}" class="card-section course-content-section w-full text-left mt-4">
+                    ${course.content}
+                </div>
+            `;
+            coursesGrid.appendChild(card);
+        });
+
+        // JavaScript для інтерактивності
+        document.querySelectorAll('.toggle-contact-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const courseId = event.target.dataset.courseId;
+                const contactSection = document.getElementById(`contact-section-${courseId}`);
+                contactSection.classList.toggle('active');
+                // Закриваємо секцію контенту, якщо вона відкрита
+                document.getElementById(`course-content-${courseId}`).classList.remove('active');
+            });
+        });
+
+        document.querySelectorAll('.activate-code-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const courseId = event.target.dataset.courseId;
+                const input = document.getElementById(`access-code-input-${courseId}`);
+                const message = document.getElementById(`code-message-${courseId}`);
+                const courseContent = document.getElementById(`course-content-${courseId}`);
+                const course = coursesData.find(c => c.id === courseId);
+
+                if (input.value.trim().toUpperCase() === course.accessCode) {
+                    message.textContent = 'Код прийнято! Курс активовано.';
+                    message.className = 'text-sm mt-2 text-green-600';
+                    courseContent.classList.add('active');
+                    // Зберігаємо доступ у localStorage, щоб не вводити код знову
+                    localStorage.setItem(`course_${courseId}_activated`, 'true');
+                    // Закриваємо секцію контакту після активації
+                    document.getElementById(`contact-section-${courseId}`).classList.remove('active');
+                } else {
+                    message.textContent = 'Невірний код. Спробуйте ще раз.';
+                    message.className = 'text-sm mt-2 text-red-500';
+                    courseContent.classList.remove('active');
+                }
+            });
+        });
+
+        // Перевіряємо localStorage при завантаженні сторінки, щоб автоматично відкрити курси
+        window.addEventListener('load', () => {
+            coursesData.forEach(course => {
+                if (localStorage.getItem(`course_${course.id}_activated`) === 'true') {
+                    document.getElementById(`course-content-${course.id}`).classList.add('active');
+                    document.getElementById(`code-message-${course.id}`).textContent = 'Курс активовано.';
+                    document.getElementById(`code-message-${course.id}`).className = 'text-sm mt-2 text-green-600';
+                    // Можна приховати поле введення коду, якщо курс вже активовано
+                    const inputElement = document.getElementById(`access-code-input-${course.id}`);
+                    const activateButton = document.getElementById(`activate-code-btn-${course.id}`);
+                    if (inputElement) inputElement.style.display = 'none';
+                    if (activateButton) activateButton.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
